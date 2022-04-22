@@ -23,6 +23,12 @@ class AStarSolver(BaseSolver):
         path_to_food = self._path_solver.astar_path()
         # print(path_to_food)
         if path_to_food:
+            return path_to_food[0]
+        else:
+            self.snake._dead = True
+            return None
+        '''
+        if path_to_food:
             # Step 2
             s_copy.move_path(path_to_food)
             
@@ -33,14 +39,14 @@ class AStarSolver(BaseSolver):
 
             # Step 3
             self._path_solver.snake = s_copy
-            path_to_tail = self._path_solver.longest_path_to_tail()
+            path_to_tail = self._path_solver.longest_path_to_tail(short='astar')
             if len(path_to_tail) > 1:
                 # print('3', path_to_food)
                 return path_to_food[0]
 
         # Step 4 In case a-star can not generate a path
         self._path_solver.snake = self.snake
-        path_to_tail = self._path_solver.longest_path_to_tail()
+        path_to_tail = self._path_solver.longest_path_to_tail(short='astar')
         if len(path_to_tail) > 1:
             # print('4', path_to_tail)
             return path_to_tail[0]
@@ -56,3 +62,4 @@ class AStarSolver(BaseSolver):
                     direc = head.direc_to(adj)
         # print('5', direc)
         return direc
+        '''

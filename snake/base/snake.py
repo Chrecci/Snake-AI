@@ -57,6 +57,7 @@ class Snake:
                 self._init_types.append(PointType.BODY_VER)
 
         self._steps = 0
+        self._maxfrontier = 0
         self._dead = False
         self._direc = self._init_direc
         self._direc_next = Direc.NONE

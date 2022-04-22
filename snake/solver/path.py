@@ -44,16 +44,16 @@ class PathSolver(BaseSolver):
     def shortest_path_to_food(self):
         return self.path_to(self.map.food, "shortest")
 
-    def longest_path_to_tail(self):
-        return self.path_to(self.snake.tail(), "longest")
+    def longest_path_to_tail(self, short='astar'):
+        return self.path_to(self.snake.tail(), "longest", short=short)
 
-    def path_to(self, des, path_type):
+    def path_to(self, des, path_type, short='astar'):
         ori_type = self.map.point(des).type
         self.map.point(des).type = PointType.EMPTY
         if path_type == "shortest":
             path = self.shortest_path_to(des)
         elif path_type == "longest":
-            path = self.longest_path_to(des)
+            path = self.longest_path_to(des, short=short)
         self.map.point(des).type = ori_type  # Restore origin type
         return path
     def astar_path(self):
@@ -83,6 +83,8 @@ class PathSolver(BaseSolver):
         self._table[head.x][head.y].score = Pos.manhattan_dist(head, des)
         queue.put((Pos.manhattan_dist(head, des), count, head))
         while len(queue.queue)>0:
+            if len(queue.queue) > self.snake._maxfrontier:
+                self.snake._maxfrontier = len(queue.queue)
             # pops head, first item in queue, similar to popleft(). We don't want the set (priority, node), just node
             
             cur = queue.get()[2]
@@ -117,7 +119,7 @@ class PathSolver(BaseSolver):
                         # print(queue.queue)
                         queue.put((adj_cell.score, count, pos))
         # print('no shortest path: ', head, cur)
-        return False
+        return deque()
 
     # not really even so much finding a distance that's the shortest. Instead, find des node from the current node, first match is it
     # each step we increase search radius is every possible direction that isn't visited yet
@@ -142,6 +144,8 @@ class PathSolver(BaseSolver):
 
         while queue:
             # print(queue)
+            if len(queue) > self.snake._maxfrontier:
+                self.snake._maxfrontier = len(queue)
             cur = queue.popleft()
             # if our current position is the destination, we can rebuild path to get there, snake will follow that path
             if cur == des:
@@ -184,7 +188,7 @@ class PathSolver(BaseSolver):
         return deque()
 
     # Basically building hamiltonian path
-    def longest_path_to(self, des):
+    def longest_path_to(self, des, short='astar'):
         """Find the longest path from the snake's head to the destination.
 
         Args:
@@ -197,7 +201,13 @@ class PathSolver(BaseSolver):
         # print('longest')
 
         # finds shortest path to tail, if it exists. If not, we lose
-        path = self.astar_path_finder(des)
+        # print('short', short)
+        if short == 'astar':
+            # print('astar')
+            path = self.astar_path_finder(des)
+        elif short == 'greedy':
+            # print('greedy')
+            path = self.shortest_path_to(des)
         if not path:
             return deque()
 

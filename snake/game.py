@@ -31,7 +31,7 @@ class GameConf:
         # Size
 
         # adjust number of squares in square map
-        self.map_rows = 10
+        self.map_rows = 20
         self.map_cols = self.map_rows
 
         #  display size
@@ -122,35 +122,38 @@ class Game:
         print("\nMap size: %dx%d" % (self._conf.map_rows, self._conf.map_cols))
         print("Solver: %s\n" % self._conf.solver_name[:-6].lower())
 
-        tot_len, tot_steps = 0, 0
+        tot_len, tot_steps, tot_max = 0, 0, 0
 
         for _ in range(NUM_EPISODES):
             print("Episode %d - " % self._episode, end="")
             while True:
                 self._game_main_normal()
                 if self._map.is_full():
-                    print("FULL (len: %d | steps: %d)"
-                          % (self._snake.len(), self._snake.steps))
+                    print("FULL (len: %d | steps: %d | max frontier: %d)"
+                          % (self._snake.len(), self._snake.steps, self._snake._maxfrontier))
                     break
                 elif self._snake.dead:
-                    print("DEAD (len: %d | steps: %d)"
-                          % (self._snake.len(), self._snake.steps))
+                    print("DEAD (len: %d | steps: %d | max frontier: %d)"
+                          % (self._snake.len(), self._snake.steps, self._snake._maxfrontier))
                     break
                 elif self._snake.steps >= STEPS_LIMIT:
-                    print("STEP LIMIT (len: %d | steps: %d)"
-                          % (self._snake.len(), self._snake.steps))
+                    print("STEP LIMIT (len: %d | steps: %d | max frontier: %d)"
+                          % (self._snake.len(), self._snake.steps, self._snake._maxfrontier))
                     self._write_logs()  # Write the last step
                     break
             tot_len += self._snake.len()
             tot_steps += self._snake.steps
+            tot_max += self._snake._maxfrontier
             self._reset()
 
         avg_len = tot_len / NUM_EPISODES
         avg_steps = tot_steps / NUM_EPISODES
-        print("\n[Summary]\nAverage Length: %.2f\nAverage Steps: %.2f\n"
-              % (avg_len, avg_steps))
+        avg_max = tot_max / NUM_EPISODES
+        print("\n[Summary]\nAverage Length: %.2f\nAverage Steps: %.2f\n\nAverage Max Frontier: %.2f"
+              % (avg_len, avg_steps, avg_max))
 
         self._on_exit()
+        return avg_len, avg_steps, avg_max
 
     def _game_main_normal(self):
 
