@@ -40,7 +40,7 @@ class GameWindow(tk.Tk):
                 game_loop()
             self._update_contents()
             self.after(self._conf.interval_draw, cb)
-        self.after(10, cb)
+        self.after(1, cb)
         self.mainloop()
 
     def _init_widgets(self):

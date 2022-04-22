@@ -45,7 +45,7 @@ class GreedySolver(BaseSolver):
         self._path_solver.snake = self.snake
         path_to_tail = self._path_solver.longest_path_to_tail()
         if len(path_to_tail) > 1:
-            print('4', path_to_tail)
+            # print('4', path_to_tail)
             return path_to_tail[0]
 
         # Step 5 (all else fails, run away from food until short path can be reached, or not in danger)

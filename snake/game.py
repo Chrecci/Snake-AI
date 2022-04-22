@@ -8,7 +8,7 @@ import traceback
 from enum import Enum, unique
 from snake.base import Direc, Map, PointType, Pos, Snake
 from snake.gui import GameWindow
-from snake.solver import GreedySolver, HamiltonSolver
+from snake.solver import GreedySolver, HamiltonSolver, AStarSolver
 
 
 @unique
@@ -26,7 +26,7 @@ class GameConf:
         self.mode = GameMode.NORMAL
 
         # Solver
-        self.solver_name = 'HamiltonSolver'  # Class name of the solver
+        self.solver_name = 'AStarSolver'  # Class name of the solver
 
         # Size
 
@@ -47,7 +47,7 @@ class GameConf:
         self.show_info_panel = True
 
         # Delay
-        self.interval_draw = 1    # ms
+        self.interval_draw = 10    # ms
         self.interval_draw_max = 100  # ms
 
         # Color
@@ -161,8 +161,9 @@ class Game:
         # don't do anything if paused
         if self._pause or self._is_episode_end():
             return
-        # print(self._solver.next_direc())
-        self._update_direc(self._solver.next_direc())
+        next_move = self._solver.next_direc()
+        # print("next move", aa)
+        self._update_direc(next_move)
         # print(self._update_direc)
         if self._conf.mode == GameMode.NORMAL and self._snake.direc_next != Direc.NONE:
             self._write_logs()

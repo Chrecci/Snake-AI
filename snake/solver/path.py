@@ -16,8 +16,8 @@ class _TableCell:
         self.reset()
 
     def __str__(self):
-        return "{ dist: %d  parent: %s  visit: %d }" % \
-               (self.dist, str(self.parent), self.visit)
+        return "{ dist: %d  parent: %s  visit: %d score: %d}" % \
+               (self.dist, str(self.parent), self.visit, self.score)
     __repr__ = __str__
 
     def reset(self):
@@ -26,7 +26,8 @@ class _TableCell:
         self.dist = sys.maxsize
         # Longest path
         self.visit = False
-        self.score = 0
+        #a-star search
+        self.score = sys.maxsize
 
 
 class PathSolver(BaseSolver):
@@ -55,8 +56,11 @@ class PathSolver(BaseSolver):
             path = self.longest_path_to(des)
         self.map.point(des).type = ori_type  # Restore origin type
         return path
+    def astar_path(self):
+        return self.astar_path_finder(self.map.food)
 
-    def astar_path (self, des):
+    def astar_path_finder(self, des):
+       # self.map.point(des).type = PointType.EMPTY
         """Find the best path from the snake's head to the destination using A* search
 
         Args:
@@ -66,14 +70,54 @@ class PathSolver(BaseSolver):
             A collections.deque of snake.base.direc.Direc indicating the path directions.
 
         """
+        # print('finder started')
         self._reset_table()
-        queue = PriorityQueue()
 
+        # queue.put((a,b)) will sort b values by priority a. get() will retrieve lowest priority
+        queue = PriorityQueue()
+        count = 0
         # Pos() with x, y position of head
         head = self.snake.head()
-
         # Table cell objects will hold all the scores
-        self._table[head.x][head.y].score = Pos.manhattan_dist(adj, self.map.food)
+        self._table[head.x][head.y].dist = 0
+        self._table[head.x][head.y].score = Pos.manhattan_dist(head, des)
+        queue.put((Pos.manhattan_dist(head, des), count, head))
+        while len(queue.queue)>0:
+            # pops head, first item in queue, similar to popleft(). We don't want the set (priority, node), just node
+            
+            cur = queue.get()[2]
+            # print('current while', cur, queue.queue)
+            # if our current position is the destination, we can rebuild path to get there, snake will follow that path
+            if cur == des:
+                # print(cur, des)
+                new_path, new_positions = self._build_path(head, des)
+                # print(new_positions)
+                # print(' success path found to', des, new_path)
+                return new_path
+
+            
+            adjs = cur.all_adj()
+
+            # Take our current cell, then iterate through all of it's adjacent cells (adjs)
+            for pos in adjs:
+                # if the position in adjacent cells is valid
+                if self._is_valid(pos):
+                    # each cell has following structure { dist: 9223372036854775807  parent: None  visit: 0 }
+                    adj_cell = self._table[pos.x][pos.y]
+                    
+                    # every cell is defaulted to maxsize, unexplored if maxsize still
+                    if adj_cell.dist == sys.maxsize:
+                        # set current node, who's neighbors we're exploring, as parent of this node
+                        adj_cell.parent = cur
+                        adj_cell.dist = self._table[cur.x][cur.y].dist + 1
+                        # pass distance from this neighbor to des
+                        adj_cell.score = adj_cell.dist + Pos.manhattan_dist(pos, des)
+                        count += 1
+                        # print('food', des)
+                        # print(queue.queue)
+                        queue.put((adj_cell.score, count, pos))
+        # print('no shortest path: ', head, cur)
+        return False
 
     # not really even so much finding a distance that's the shortest. Instead, find des node from the current node, first match is it
     # each step we increase search radius is every possible direction that isn't visited yet
@@ -101,10 +145,10 @@ class PathSolver(BaseSolver):
             cur = queue.popleft()
             # if our current position is the destination, we can rebuild path to get there, snake will follow that path
             if cur == des:
-                print(cur, des)
+                # print(cur, des)
                 new_path, new_positions = self._build_path(head, des)
-                print(new_positions)
-                print(new_path)
+                # print(new_positions)
+                # print(new_path)
                 return new_path
 
             # Arrange the order of traverse to make the path as straight as possible
@@ -126,21 +170,17 @@ class PathSolver(BaseSolver):
             # Take our current cell, then iterate through all of it's adjacent cells (adjs)
             for pos in adjs:
                 # if the position in adjacent cells is valid
-                print(pos)
                 if self._is_valid(pos):
                     # each cell has following structure { dist: 9223372036854775807  parent: None  visit: 0 }
                     adj_cell = self._table[pos.x][pos.y]
-                    
-                    print(adj_cell)
                     
                     # every cell is defaulted to maxsize
                     if adj_cell.dist == sys.maxsize:
                         # we have our 
                         adj_cell.parent = cur
                         adj_cell.dist = self._table[cur.x][cur.y].dist + 1
-                        print('new', adj_cell)
                         queue.append(pos)
-        print('no shortest path: ', head, cur)
+        # print('no shortest path: ', head, cur)
         return deque()
 
     # Basically building hamiltonian path
@@ -155,7 +195,9 @@ class PathSolver(BaseSolver):
 
         """
         # print('longest')
-        path = self.shortest_path_to(des)
+
+        # finds shortest path to tail, if it exists. If not, we lose
+        path = self.astar_path_finder(des)
         if not path:
             return deque()
 
@@ -205,7 +247,7 @@ class PathSolver(BaseSolver):
                 col.reset()
 
     def _build_path(self, src, des):
-
+        # follow parents from current node upwards, producing the directions instead
         path = deque()
         positions = deque()
         tmp = des

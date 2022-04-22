@@ -13,12 +13,15 @@ class AStarSolver(BaseSolver):
 
     def next_direc(self):
         # Create a virtual snake (s_copy) and map (m_copy)
+        # print('started solver')
         s_copy, m_copy = self.snake.copy()
         # print(m_copy)
         # Step 1
         self._path_solver.snake = self.snake
-        path_to_food = self._path_solver.shortest_path_to_food()
-        #print(path_to_food)
+
+        # solution to next food from a star
+        path_to_food = self._path_solver.astar_path()
+        # print(path_to_food)
         if path_to_food:
             # Step 2
             s_copy.move_path(path_to_food)
@@ -35,14 +38,14 @@ class AStarSolver(BaseSolver):
                 # print('3', path_to_food)
                 return path_to_food[0]
 
-        # Step 4
+        # Step 4 In case a-star can not generate a path
         self._path_solver.snake = self.snake
         path_to_tail = self._path_solver.longest_path_to_tail()
         if len(path_to_tail) > 1:
-            print('4', path_to_tail)
+            # print('4', path_to_tail)
             return path_to_tail[0]
 
-        # Step 5
+        # Step 5 (all else fails, run away from food until short path can be reached, or not in danger)
         head = self.snake.head()
         direc, max_dist = self.snake.direc, -1
         for adj in head.all_adj():
