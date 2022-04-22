@@ -178,9 +178,9 @@ class PathSolver(BaseSolver):
                     # each cell has following structure { dist: 9223372036854775807  parent: None  visit: 0 }
                     adj_cell = self._table[pos.x][pos.y]
                     
-                    # every cell is defaulted to maxsize
+                    # every cell is defaulted to maxsize, if still maxsize we haven't checked it yet
                     if adj_cell.dist == sys.maxsize:
-                        # we have our 
+                        # current node is the adjacent's parrent, it's dist value is 1+parent's
                         adj_cell.parent = cur
                         adj_cell.dist = self._table[cur.x][cur.y].dist + 1
                         queue.append(pos)

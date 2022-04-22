@@ -9,7 +9,7 @@ class AStarSolver(BaseSolver):
     def __init__(self, snake):
         super().__init__(snake)
         self._path_solver = PathSolver(snake)
-        print(snake.__dict__)
+        # print(snake.__dict__)
 
     def next_direc(self):
         # Create a virtual snake (s_copy) and map (m_copy)
@@ -22,6 +22,9 @@ class AStarSolver(BaseSolver):
         # solution to next food from a star
         path_to_food = self._path_solver.astar_path()
         # print(path_to_food)
+
+        # remove if want to run non-optimized, only a-star
+        '''
         if path_to_food:
             return path_to_food[0]
         else:
@@ -62,4 +65,4 @@ class AStarSolver(BaseSolver):
                     direc = head.direc_to(adj)
         # print('5', direc)
         return direc
-        '''
+        

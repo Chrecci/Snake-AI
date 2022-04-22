@@ -31,7 +31,7 @@ class GameConf:
         # Size
 
         # adjust number of squares in square map
-        self.map_rows = 20
+        self.map_rows = 10
         self.map_cols = self.map_rows
 
         #  display size
@@ -102,7 +102,8 @@ class Game:
 
     def run(self):
         if self._conf.mode == GameMode.BENCHMARK:
-            self._run_benchmarks()
+            benches = self._run_benchmarks()
+            return benches
         else:
             window = GameWindow("Snake", self._conf, self._map, self, self._on_exit, (
                 ('<w>', lambda e: self._update_direc(Direc.UP)),
@@ -117,7 +118,7 @@ class Game:
 
     def _run_benchmarks(self):
         STEPS_LIMIT = 5000
-        NUM_EPISODES = int(input("Please input the number of episodes: "))
+        NUM_EPISODES = 10 # int(input("Please input the number of episodes: "))
 
         print("\nMap size: %dx%d" % (self._conf.map_rows, self._conf.map_cols))
         print("Solver: %s\n" % self._conf.solver_name[:-6].lower())
@@ -153,7 +154,7 @@ class Game:
               % (avg_len, avg_steps, avg_max))
 
         self._on_exit()
-        return avg_len, avg_steps, avg_max
+        return [avg_len, avg_steps, avg_max]
 
     def _game_main_normal(self):
 
