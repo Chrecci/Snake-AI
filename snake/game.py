@@ -47,7 +47,7 @@ class GameConf:
         self.show_info_panel = True
 
         # Delay
-        self.interval_draw = 10    # ms
+        self.interval_draw = 5    # ms
         self.interval_draw_max = 100  # ms
 
         # Color
@@ -69,7 +69,6 @@ class GameConf:
 
         # Info
         self.info_str = (
-            "<w/a/s/d>: snake direction\n"
             "<space>: pause/resume\n"
             "<r>: restart    <esc>: exit\n"
             "-----------------------------------\n"
